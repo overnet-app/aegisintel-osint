@@ -1,0 +1,167 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+.next/
+out/
+.nuxt/
+.vuepress/dist/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+*.dump
+
+# Docker
+docker-compose.override.yml
+.docker/
+
+# Prisma
+prisma/migrations/*.sql
+!prisma/migrations/migration_lock.toml
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+.vite/
+.turbo/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Secrets and keys
+*.pem
+*.key
+*.cert
+secrets/
+*.secret
+
+# Redis
+dump.rdb
+*.rdb
+
+# Elasticsearch
+elastic_data/
+
+# MinIO
+minio_data/
+
+# Uploads and user content
+uploads/
+storage/
+public/uploads/
+
+# BullMQ
+bullmq/
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+*.pid
+*.seed
+*.pid.lock
+.npm
+.yarn-integrity
+.cache
+.vercel
+.netlify
+
+# Local development
+.local/
+local/
+dev/
+*.local
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# SearXNG data
+searxng/searxng-data/
+searxng/searxng-valkey-data/
+
+# Caddy data
+caddy-data/
+caddy-config/
+
+# Package manager locks (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# IDE specific
+.cursor/
+.vscode/
+.idea/
+
+# OSINT specific
+*.dossier
+intelligence_reports/

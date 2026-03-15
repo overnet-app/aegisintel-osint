@@ -1,0 +1,21 @@
+# SearXNG limiter configuration
+# Disable bot detection for local API access
+
+[botdetection.ip_limit]
+# Disable IP-based rate limiting
+link_token = false
+
+[botdetection.ip_lists]
+# Empty block lists
+block_ip = []
+pass_ip = [
+    "127.0.0.1",
+    "192.168.0.0/16",
+    "10.0.0.0/8",
+    "172.16.0.0/12",
+    "::1",
+]
+
+[botdetection]
+# Allow requests without X-Forwarded-For header
+# For local/internal API access

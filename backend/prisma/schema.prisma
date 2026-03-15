@@ -1,0 +1,264 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+enum UserRole {
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+enum SearchType {
+  PRELIMINARY
+  DEEP
+  IMAGE
+}
+
+enum SearchStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum DataSource {
+  INSTAGRAM
+  TWITTER
+  LINKEDIN
+  FACEBOOK
+  TIKTOK
+  WEB
+  IMAGE_SEARCH
+  OTHER
+}
+
+enum LookupType {
+  PHONE
+  EMAIL
+  IMAGE
+  VIN
+  ADDRESS
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  firstName String?
+  lastName  String?
+  role      UserRole @default(ANALYST)
+  isActive  Boolean  @default(true)
+
+  apiKeys        ApiKey[]
+  searchSessions SearchSession[]
+  dossiers       Dossier[]
+  auditLogs      AuditLog[]
+  refreshTokens  RefreshToken[]
+  reverseLookups ReverseLookupSession[]
+  preferredModel String         @default("google/gemma-2-9b-it:free")
+  defaultModel String?          @default("google/gemma-3-27b-it") // Default fallback model when no model specified
+  researchModelProvider String? @default("openrouter") // "openrouter" | "llamacpp"
+  researchModelTier String?     @default("free") // "free" | "paid"
+  researchModel String?         @default("google/gemma-3-27b-it:free") // Model ID
+  agentModelConfig Json         @default("{}") // Per-agent model configuration
+  thirdPartyKeys Json           @default("{}")
+  enabledServices Json          @default("{\"clarifai\": true}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  device    String?
+  ip        String?
+  expiresAt DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model SearchSession {
+  id       String       @id @default(uuid())
+  userId   String
+  query    String
+  type     SearchType
+  status   SearchStatus @default(PENDING)
+  progress Int          @default(0) // 0-100
+
+  results SearchResult[]
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("search_sessions")
+}
+
+model SearchResult {
+  id              String     @id @default(uuid())
+  searchSessionId String
+  source          DataSource
+  data            Json
+  images          String[]
+  metadata        Json? // Confidence scores, source details
+
+  searchSession SearchSession @relation(fields: [searchSessionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([searchSessionId])
+  @@index([source])
+  @@map("search_results")
+}
+
+model Dossier {
+  id            String   @id @default(uuid())
+  userId        String
+  subject       String
+  content       Json     // Structured dossier data (Person, Org, etc.)
+  notes         String?
+  timeline      Json?    // Chronological events
+  psychProfile  Json?    // Psychological analysis
+  patternAnalysis Json?  // Behavioral patterns
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([subject])
+  @@map("dossiers")
+}
+
+model FaceEmbedding {
+  id        String                 @id @default(uuid())
+  sessionId String?
+  dossierId String?
+  vector    Unsupported("vector")?
+  metadata  Json
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([dossierId])
+  @@map("face_embeddings")
+}
+
+model AuditLog {
+  id        String  @id @default(uuid())
+  userId    String?
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  userId     String
+  keyHash    String    @unique
+  name       String
+  scopes     String[]
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("api_keys")
+}
+
+model ReverseLookupSession {
+  id        String     @id @default(uuid())
+  userId    String
+  type      LookupType
+  query     String
+  result    Json       // ReverseLookupResult
+  status    String     @default("completed") // completed, failed
+  confidence Int?      // Overall confidence score
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("reverse_lookup_sessions")
+}
+
+model PersonIdentity {
+  id          String   @id @default(uuid())
+  fullName    String?
+  firstName   String?
+  lastName    String?
+  email       String?
+  phone       String?
+  address     Json?   // AddressInfo
+  socialProfiles Json? // Array of SocialProfile
+  metadata    Json?   // Additional metadata
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([fullName])
+  @@index([email])
+  @@index([phone])
+  @@map("person_identities")
+}
+
+model Memory {
+  id          String   @id @default(uuid())
+  userId      String?
+  sessionId   String?  // Research session ID for episodic memory
+  type        String   // 'entity' | 'episodic' | 'fact' | 'relationship'
+  entityType  String?  // 'person' | 'organization' | 'location' | 'event' | 'concept'
+  entityId    String?  // Identifier for the entity (e.g., person name, org name)
+  content     Json     // Memory content (structured data)
+  embedding   Unsupported("vector")? // Vector embedding for semantic search
+  metadata    Json?    // Additional metadata (confidence, sources, etc.)
+  importance  Int      @default(50) // 0-100, how important this memory is
+  accessCount Int      @default(0) // How many times this memory was accessed
+  lastAccessed DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([type])
+  @@index([entityType, entityId])
+  @@index([lastAccessed])
+  @@map("memories")
+}

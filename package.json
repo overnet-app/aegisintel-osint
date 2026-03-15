@@ -1,0 +1,25 @@
+{
+  "name": "aegis-intel",
+  "version": "1.0.0",
+  "description": "Production-grade OSINT platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run start:frontend",
+    "start:dev": "npm run start:dev --workspace=backend",
+    "start:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "test": "npm run test --workspaces"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "prettier": "^3.2.4",
+    "husky": "^9.0.7"
+  }
+}
